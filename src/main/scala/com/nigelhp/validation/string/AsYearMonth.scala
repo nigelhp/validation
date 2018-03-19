@@ -18,5 +18,7 @@ object AsYearMonth {
     Try(YearMonth.parse(value, DateTimeFormatter.ofPattern(YearMonthFormat)))
 
   def apply(value: String): ValidationWithMessage[YearMonth] =
-    tryParseYearMonth(value).fold(_ => Failure(s"Value [$value] is not a valid YearMonth"), Success(_))
+    tryParseYearMonth(value).fold(
+      _ => Failure(s"Value [$value] does not comply with yearMonth format [$YearMonthFormat]"),
+      Success(_))
 }
