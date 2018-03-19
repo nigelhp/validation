@@ -1,4 +1,4 @@
-package com.nigelhp.validation.string
+package com.nigelhp.validation.conversion
 
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -7,7 +7,7 @@ import com.nigelhp.validation.{Failure, Success, ValidationWithMessage}
 
 import scala.util.Try
 
-object AsYearMonth {
+object StringAsYearMonth {
   /*
    * NOTE: use of 'u' (year) rather than 'y' (year-of-era).
    * This prevents 20180302 from being interpreted as the 2nd month of the year 201803.
