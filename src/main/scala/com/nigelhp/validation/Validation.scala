@@ -24,10 +24,7 @@ object Validation {
     }
 
   def map[E, A, B](validation: Validation[E, A])(f: A => B): Validation[E, B] =
-    validation match {
-      case e@Failure(_, _) => e.asInstanceOf[Validation[E, B]]
-      case Success(a) => Success(f(a))
-    }
+    flatMap(validation)(a => Success(f(a)))
 
   def flatMap[E, A, B](validation: Validation[E, A])(f: A => Validation[E, B]): Validation[E, B] =
     validation match {
