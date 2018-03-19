@@ -36,15 +36,19 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     }
   }
 
+  "map" - {
+
+  }
+
   "fromTry" - {
     "converts a scala.util.Failure to a Failure[Throwable, A] when no failure conversion function is supplied" in {
       val cause = new Exception("failure message")
-      Validation.fromTry(scala.util.Failure(cause)) shouldBe Failure(cause, Nil)
+      Validation.fromTry(scala.util.Failure(cause)) shouldBe Failure(cause)
     }
 
     "converts a scala.util.Failure to a Failure[E, A] when a failure conversion function (Throwable => E) is supplied" in {
       val cause = new Exception("failure message")
-      Validation.fromTry(_.getMessage)(scala.util.Failure(cause)) shouldBe Failure("failure message")
+      Validation.fromTry(scala.util.Failure(cause), _.getMessage) shouldBe Failure("failure message")
     }
 
     "converts a scala.util.Success to a Success" in {

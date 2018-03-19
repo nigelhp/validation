@@ -24,8 +24,8 @@ object Validation {
     }
 
   def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
-    fromTry(identity[Throwable] _)(aTry)
+    fromTry(aTry, identity)
 
-  def fromTry[E, A](onFailure: Throwable => E)(aTry: Try[A]): Validation[E, A] =
+  def fromTry[E, A](aTry: Try[A], onFailure: Throwable => E): Validation[E, A] =
     aTry.fold(cause => Failure(onFailure(cause)), Success(_))
 }
