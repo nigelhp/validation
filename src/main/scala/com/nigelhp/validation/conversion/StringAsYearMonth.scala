@@ -3,7 +3,7 @@ package com.nigelhp.validation.conversion
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
-import com.nigelhp.validation.{Failure, Success, ValidationWithMessage}
+import com.nigelhp.validation.{Validation, ValidationWithMessage}
 
 import scala.util.Try
 
@@ -18,7 +18,7 @@ object StringAsYearMonth {
     Try(YearMonth.parse(value, DateTimeFormatter.ofPattern(YearMonthFormat)))
 
   def apply(value: String): ValidationWithMessage[YearMonth] =
-    tryParseYearMonth(value).fold(
-      _ => Failure(s"Value [$value] does not comply with yearMonth format [$YearMonthFormat]"),
-      Success(_))
+    Validation.fromTry(_ => s"Value [$value] does not comply with yearMonth format [$YearMonthFormat]") {
+      tryParseYearMonth(value)
+    }
 }

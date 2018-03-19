@@ -35,4 +35,21 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
       Validation.fold[String, Int, Int](onFailure, onSuccess)(Success(successValue)) shouldBe foldResult
     }
   }
+
+  "fromTry" - {
+    "converts a scala.util.Failure to a Failure[Throwable, A] when no failure conversion function is supplied" in {
+      val cause = new Exception("failure message")
+      Validation.fromTry(scala.util.Failure(cause)) shouldBe Failure(cause, Nil)
+    }
+
+    "converts a scala.util.Failure to a Failure[E, A] when a failure conversion function (Throwable => E) is supplied" in {
+      val cause = new Exception("failure message")
+      Validation.fromTry(_.getMessage)(scala.util.Failure(cause)) shouldBe Failure("failure message")
+    }
+
+    "converts a scala.util.Success to a Success" in {
+      val successValue = 42
+      Validation.fromTry(scala.util.Success(successValue)) shouldBe Success(successValue)
+    }
+  }
 }

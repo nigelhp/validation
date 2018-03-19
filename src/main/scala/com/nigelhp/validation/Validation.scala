@@ -1,5 +1,7 @@
 package com.nigelhp.validation
 
+import scala.util.Try
+
 /**
   * A validation is either a Success or a Failure.
   *
@@ -20,4 +22,10 @@ object Validation {
       case Failure(h, t) => onFailure(h :: t)
       case Success(a) => onSuccess(a)
     }
+
+  def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
+    fromTry(identity[Throwable] _)(aTry)
+
+  def fromTry[E, A](onFailure: Throwable => E)(aTry: Try[A]): Validation[E, A] =
+    aTry.fold(cause => Failure(onFailure(cause)), Success(_))
 }
