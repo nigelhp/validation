@@ -18,6 +18,12 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     val fn = mockFunction[String, Validation[String, Int]]
   }
 
+  private trait Map2Fixture {
+    val intValue = 42
+    val longValue = 666L
+    val fn = mockFunction[Int, Long, String]
+  }
+
   "fold" - {
     "applies the onFailure function to a Failure" - {
       "when the Failure contains a singleton value" in new FoldFixture {
@@ -69,6 +75,27 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
 
     "does not apply the supplied function to a Failure" in new FlatMapFixture {
       Validation.flatMap(Failure("failure message"))(fn) shouldBe Failure("failure message")
+    }
+  }
+
+  "map2" -{
+    "applies the supplied function when both validations are Successes" in new Map2Fixture {
+      val stringValue = "some-string"
+      fn.expects(intValue, longValue).returning(stringValue)
+
+      Validation.map2(Success(intValue), Success(longValue))(fn) shouldBe Success(stringValue)
+    }
+
+    "captures all failure messages when both validations are Failures" in new Map2Fixture {
+      Validation.map2(Failure("a failed"), Failure("b failed"))(fn) shouldBe Failure("a failed", List("b failed"))
+    }
+
+    "returns Failure when the first validation is a Failure even though the second was a Success" in new Map2Fixture {
+      Validation.map2(Failure("a failed"), Success(longValue))(fn) shouldBe Failure("a failed")
+    }
+
+    "returns Failure when the second validation is a Failure even though the first was a Success" in new Map2Fixture {
+      Validation.map2(Success(intValue), Failure("b failed"))(fn) shouldBe Failure("b failed")
     }
   }
 

@@ -32,6 +32,14 @@ object Validation {
       case Success(a) => f(a)
     }
 
+  def map2[E, A, B, C](va: Validation[E, A], vb: Validation[E, B])(f: (A, B) => C): Validation[E, C] =
+    (va, vb) match {
+      case (Success(a), Success(b)) => Success(f(a, b))
+      case (Failure(ha, ta), Failure(hb, tb)) => Failure(ha, ta ++: hb +: tb)
+      case (Failure(h, t), _) => Failure(h, t)
+      case (_, Failure(h, t)) => Failure(h, t)
+    }
+
   def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
     fromTry(aTry, identity)
 
