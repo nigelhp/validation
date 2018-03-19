@@ -13,3 +13,11 @@ sealed trait Validation[+E, +A]
 
 case class Success[A](a: A) extends Validation[Nothing, A]
 case class Failure[E](head: E, tail: List[E] = Nil) extends Validation[E, Nothing]
+
+object Validation {
+  def fold[E, A, B](onFailure: List[E] => B, onSuccess: A => B)(validation: Validation[E, A]): B =
+    validation match {
+      case Failure(h, t) => onFailure(h :: t)
+      case Success(a) => onSuccess(a)
+    }
+}
