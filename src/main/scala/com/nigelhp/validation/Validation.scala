@@ -23,6 +23,12 @@ object Validation {
       case Success(a) => onSuccess(a)
     }
 
+  def map[E, A, B](validation: Validation[E, A])(f: A => B): Validation[E, B] =
+    validation match {
+      case f@Failure(_, _) => f.asInstanceOf[Validation[E, B]]
+      case Success(a) => Success(f(a))
+    }
+
   def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
     fromTry(aTry, identity)
 

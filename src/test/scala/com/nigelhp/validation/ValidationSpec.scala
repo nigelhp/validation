@@ -10,6 +10,10 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     val foldResult = 666
   }
 
+  private trait MapFixture {
+    val fn = mockFunction[Int, Int]
+  }
+
   "fold" - {
     "applies the onFailure function to a Failure" - {
       "when the Failure contains a singleton value" in new FoldFixture {
@@ -37,7 +41,17 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
   }
 
   "map" - {
+    "applies the supplied function to a Success" in new MapFixture {
+      val inputValue = 42
+      val outputValue = 666
+      fn.expects(inputValue).returning(outputValue)
 
+      Validation.map(Success(inputValue))(fn) shouldBe Success(outputValue)
+    }
+    
+    "does not apply the supplied function to a Failure" in new MapFixture {
+      Validation.map(Failure("failure message"))(fn) shouldBe Failure("failure message")
+    }
   }
 
   "fromTry" - {
