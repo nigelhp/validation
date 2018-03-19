@@ -17,7 +17,7 @@ case class Success[A](a: A) extends Validation[Nothing, A]
 case class Failure[E](head: E, tail: List[E] = Nil) extends Validation[E, Nothing]
 
 object Validation {
-  def fold[E, A, B](onFailure: List[E] => B, onSuccess: A => B)(validation: Validation[E, A]): B =
+  def fold[E, A, B](validation: Validation[E, A])(onFailure: List[E] => B, onSuccess: A => B): B =
     validation match {
       case Failure(h, t) => onFailure(h :: t)
       case Success(a) => onSuccess(a)
@@ -45,4 +45,10 @@ object Validation {
 
   def fromTry[E, A](aTry: Try[A], onFailure: Throwable => E): Validation[E, A] =
     aTry.fold(cause => Failure(onFailure(cause)), Success(_))
+
+  def fromEither[E, A](either: Either[E, A]) =
+    either.fold(Failure(_), Success(_))
+
+  def toEither[E, A](validation: Validation[E, A]): Either[List[E], A] =
+    fold(validation)(Left(_), Right(_))
 }
