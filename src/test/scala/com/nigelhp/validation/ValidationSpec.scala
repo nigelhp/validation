@@ -148,4 +148,14 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
       Validation.toEither(Success(42)) shouldBe Right(42)
     }
   }
+
+  "toEither" - {
+    "converts a Failure to a None" in {
+      Validation.toOption(Failure("validation failed")) shouldBe None
+    }
+
+    "converts a Success to a Some" in {
+      Validation.toOption(Success(42)) shouldBe Some(42)
+    }
+  }
 }

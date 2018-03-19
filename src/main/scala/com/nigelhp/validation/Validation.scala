@@ -51,4 +51,7 @@ object Validation {
 
   def toEither[E, A](validation: Validation[E, A]): Either[List[E], A] =
     fold(validation)(Left(_), Right(_))
+
+  def toOption[E, A](validation: Validation[E, A]): Option[A] =
+    fold(validation)(Function.const(None), Some(_))
 }
