@@ -24,6 +24,13 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     val fn = mockFunction[Int, Long, String]
   }
 
+  private trait Map3Fixture {
+    val intValue = 42
+    val longValue = 666L
+    val bigIntValue = BigInt(1234567890)
+    val fn = mockFunction[Int, Long, BigInt, String]
+  }
+
   "fold" - {
     "applies the onFailure function to a Failure" - {
       "when the Failure contains a singleton value" in new FoldFixture {
@@ -78,7 +85,7 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     }
   }
 
-  "map2" -{
+  "map2" - {
     "applies the supplied function when both validations are Successes" in new Map2Fixture {
       val stringValue = "some-string"
       fn.expects(intValue, longValue).returning(stringValue)
@@ -96,6 +103,51 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
 
     "returns Failure when the second validation is a Failure even though the first was a Success" in new Map2Fixture {
       Validation.map2(Success(intValue), Failure("b failed"))(fn) shouldBe Failure("b failed")
+    }
+  }
+
+  "map3" - {
+    "applies the supplied function when all three validations are Successes" in new Map3Fixture {
+      val stringValue = "some-string"
+      fn.expects(intValue, longValue, bigIntValue).returning(stringValue)
+
+      Validation.map3(Success(intValue), Success(longValue), Success(bigIntValue))(fn) shouldBe Success(stringValue)
+    }
+
+    "captures all failure messages when all three validations are Failures" in new Map3Fixture {
+      Validation.map3(Failure("a failed"), Failure("b failed"), Failure("c failed"))(fn) shouldBe Failure(
+        "a failed", List("b failed", "c failed"))
+    }
+
+    "captures both failure messages when two of the three validations are Failures" - {
+      "(the first and second)" in new Map3Fixture {
+        Validation.map3(Failure("a failed"), Failure("b failed"), Success(bigIntValue))(fn) shouldBe Failure(
+          "a failed", List("b failed"))
+      }
+
+      "(the first and third)" in new Map3Fixture {
+        Validation.map3(Failure("a failed"), Success(longValue), Failure("c failed"))(fn) shouldBe Failure(
+          "a failed", List("c failed"))
+      }
+
+      "(the second and third)" in new Map3Fixture {
+        Validation.map3(Success(intValue), Failure("b failed"), Failure("c failed"))(fn) shouldBe Failure(
+          "b failed", List("c failed"))
+      }
+    }
+
+    "captures the failure message when one of the three validations is a Failure" - {
+      "(the first)" in new Map3Fixture {
+        Validation.map3(Failure("a failed"), Success(longValue), Success(bigIntValue))(fn) shouldBe Failure("a failed")
+      }
+
+      "(the second)" in new Map3Fixture {
+        Validation.map3(Success(intValue), Failure("b failed"), Success(bigIntValue))(fn) shouldBe Failure("b failed")
+      }
+
+      "(the third)" in new Map3Fixture {
+        Validation.map3(Success(intValue), Success(longValue), Failure("c failed"))(fn) shouldBe Failure("c failed")
+      }
     }
   }
 

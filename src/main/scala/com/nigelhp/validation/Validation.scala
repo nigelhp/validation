@@ -1,5 +1,6 @@
 package com.nigelhp.validation
 
+import scala.Function.const
 import scala.util.Try
 
 /**
@@ -40,6 +41,34 @@ object Validation {
       case (_, Failure(h, t)) => Failure(h, t)
     }
 
+  // TODO cleanup
+  def map3[E, A, B, C, D](va: Validation[E, A], vb: Validation[E, B], vc: Validation[E, C])(f: (A, B, C) => D): Validation[E, D] = {
+    val x: A => B => C => D = f.curried
+    val y = Success(x)
+
+    val aaa: Validation[E, B => C => D] = map2(y, va) { (z, a) =>
+      z(a)
+    }
+
+    val bbb: Validation[E, C => D] = map2(aaa, vb) { (z, b) =>
+      z(b)
+    }
+
+    val ccc: Validation[E, D] = map2(bbb, vc) { (z, c) =>
+      z(c)
+    }
+
+    ccc
+  }
+
+  //def unit[A](a: => A): F[A]
+
+//  def apply[A, B](fab: F[A => B])(fa: F[A]): F[B] = {
+//    map2(fab, fa) { (f, a) =>
+//      f(a)
+//    }
+//  }
+
   def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
     fromTry(aTry, identity)
 
@@ -53,5 +82,5 @@ object Validation {
     fold(validation)(Left(_), Right(_))
 
   def toOption[E, A](validation: Validation[E, A]): Option[A] =
-    fold(validation)(Function.const(None), Some(_))
+    fold(validation)(const(None), Some(_))
 }
