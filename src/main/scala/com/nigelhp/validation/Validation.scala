@@ -61,7 +61,7 @@ object Validation {
   def fromTry[E, A](aTry: Try[A], onFailure: Throwable => E): Validation[E, A] =
     aTry.fold(cause => Failure(onFailure(cause)), Success(_))
 
-  def fromEither[E, A](either: Either[E, A]) =
+  def fromEither[E, A](either: Either[E, A]): Validation[E, A] =
     either.fold(Failure(_), Success(_))
 
   def toEither[E, A](validation: Validation[E, A]): Either[List[E], A] =
