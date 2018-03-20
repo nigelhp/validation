@@ -25,12 +25,20 @@ object Validation {
     }
 
   def map[E, A, B](validation: Validation[E, A])(f: A => B): Validation[E, B] =
-    flatMap(validation)(a => Success(f(a)))
+    flatMap(validation)(a => unit(f(a)))
 
   def flatMap[E, A, B](validation: Validation[E, A])(f: A => Validation[E, B]): Validation[E, B] =
     validation match {
       case e@Failure(_, _) => e.asInstanceOf[Validation[E, B]]
       case Success(a) => f(a)
+    }
+
+  private def unit[E, A](a: => A): Validation[E, A] =
+    Success(a)
+
+  private def apply[E, A, B](vFn: Validation[E, A => B])(vA: Validation[E, A]): Validation[E, B] =
+    map2(vFn, vA) { (f, a) =>
+      f(a)
     }
 
   def map2[E, A, B, C](va: Validation[E, A], vb: Validation[E, B])(f: (A, B) => C): Validation[E, C] =
@@ -41,33 +49,11 @@ object Validation {
       case (_, Failure(h, t)) => Failure(h, t)
     }
 
-  // TODO cleanup
   def map3[E, A, B, C, D](va: Validation[E, A], vb: Validation[E, B], vc: Validation[E, C])(f: (A, B, C) => D): Validation[E, D] = {
-    val x: A => B => C => D = f.curried
-    val y = Success(x)
-
-    val aaa: Validation[E, B => C => D] = map2(y, va) { (z, a) =>
-      z(a)
-    }
-
-    val bbb: Validation[E, C => D] = map2(aaa, vb) { (z, b) =>
-      z(b)
-    }
-
-    val ccc: Validation[E, D] = map2(bbb, vc) { (z, c) =>
-      z(c)
-    }
-
-    ccc
+    val vbcd = apply(unit(f.curried))(va)
+    val vcd = apply(vbcd)(vb)
+    apply(vcd)(vc)
   }
-
-  //def unit[A](a: => A): F[A]
-
-//  def apply[A, B](fab: F[A => B])(fa: F[A]): F[B] = {
-//    map2(fab, fa) { (f, a) =>
-//      f(a)
-//    }
-//  }
 
   def fromTry[A](aTry: Try[A]): Validation[Throwable, A] =
     fromTry(aTry, identity)

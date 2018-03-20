@@ -35,7 +35,7 @@ class ValidationSpec extends FreeSpec with Matchers with MockFactory {
     "applies the onFailure function to a Failure" - {
       "when the Failure contains a singleton value" in new FoldFixture {
         val failureMsg = "validation failed"
-        onFailure.expects(failureMsg :: Nil).returning(foldResult)
+        onFailure.expects(List(failureMsg)).returning(foldResult)
 
         Validation.fold[String, Int, Int](Failure(failureMsg))(onFailure, onSuccess) shouldBe foldResult
       }
